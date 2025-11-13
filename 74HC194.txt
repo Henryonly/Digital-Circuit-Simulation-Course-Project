@@ -1,0 +1,78 @@
+module top_module();
+    reg clk = 0;
+    always #5 clk = ~clk;
+    `probe(clk);
+    
+    // 9位激励信号in的位分配：
+    // in[8]  -> CR（异步清零，低有效）
+    // in[7:6]-> S[1:0]（模式控制：00=保持，01=右移，10=左移，11=并行输入）
+    // in[5]  -> DSR（右移串行输入）
+    // in[4]  -> DSL（左移串行输入）
+    // in[3:0]-> D[3:0]（4位并行数据输入）
+    reg [8:0] in = 9'b000000000;
+    initial begin
+        `probe_start;
+        #10 in <= 9'b000000000;  // CR=0（清零）, S=00, DSL=0, DSR=0, D=0000
+        #10 in <= 9'b111000110;  // CR=1, S=11（并行输入）, D=0110
+        #10 in <= 9'b100111111;  // CR=1, S=00（保持）, D=1111
+        #10 in <= 9'b101010000;  // CR=1, S=01（右移）, DSR=1
+        #10 in <= 9'b101010000;  // 继续右移
+        #10 in <= 9'b110000000;  // CR=1, S=10（左移）, DSL=0
+        #10 in <= 9'b110000000;  // 继续左移
+        #10 in <= 9'b111111010;  // CR=1, S=11（并行输入）, D=1010
+        #10 in <= 9'b000000000;  // CR=0（清零）
+        #10 $finish;
+    end
+    
+    wire [3:0] Q;
+    chip_74HC194 my_module(
+        .CR(in[8]),
+        .S(in[7:6]),
+        .CP(clk),
+        .DSR(in[5]),
+        .DSL(in[4]),
+        .D({in[3], in[2], in[1], in[0]}),
+        .Q(Q)
+    );
+endmodule
+
+module chip_74HC194(
+    input CR,
+    input [1:0] S,
+    input CP,
+    input DSR,
+    input DSL,
+    input [3:0] D,
+    output reg [3:0] Q
+);
+
+always @(posedge CP or negedge CR) begin
+    if (!CR) begin
+        Q <= 4'b0000;
+    end else begin
+        case (S)
+            2'b00: Q <= Q;
+            2'b01: Q <= {Q[2:0], DSR};
+            2'b10: Q <= {DSL, Q[3:1]};
+            2'b11: Q <= D;
+            default: Q <= 4'bxxxx;
+        endcase
+    end
+end
+
+`probe(CR);
+`probe(S[1]);
+`probe(S[0]);
+`probe(CP);
+`probe(DSR);
+`probe(DSL);
+`probe(D[3]);
+`probe(D[2]);
+`probe(D[1]);
+`probe(D[0]);
+`probe(Q[3]);
+`probe(Q[2]);
+`probe(Q[1]);
+`probe(Q[0]);
+
+endmodule

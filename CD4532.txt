@@ -1,0 +1,69 @@
+module top_module();
+    reg clk=0;
+    always #5 clk=~clk;
+    initial `probe_start;
+    `probe(clk);
+    reg [8:0] in=9'b000000000;
+    initial begin
+        #10 in<=9'b100000000;
+        #10 in<=9'b100000001;
+        #10 in<=9'b100000010;
+        #10 in<=9'b100000100;
+        #10 in<=9'b100001000;
+        #10 in<=9'b100010000;
+        #10 in<=9'b100100000;
+        #10 in<=9'b101000000;
+        #10 in<=9'b110000000;
+        #10 in<=9'b000000000;
+        #10 in<=9'b000000001;
+        #10 in<=9'b100000111;
+        #50 $finish;
+    end
+    wire [2:0]Y;
+    wire GS;
+    wire EO;
+    CD4532 my_module(in[8],in[7:0],Y[2:0],GS,EO);
+endmodule
+    
+module CD4532(input EI,
+              input [7:0]I, 
+              output reg[2:0]Y,
+              output GS,
+              output EO);
+    wire sum;
+    and(EO,EI,~|I[7:0]);
+    assign sum=|I[7:0];
+    and(GS,EI,sum);
+    always @(*) begin
+        if (EI==1) begin
+        casex (I)
+            8'b1xxxxxxx: Y=3'b111;
+            8'b01xxxxxx: Y=3'b110;
+            8'b001xxxxx: Y=3'b101;
+            8'b0001xxxx: Y=3'b100;
+            8'b00001xxx: Y=3'b011;
+            8'b000001xx: Y=3'b010;
+            8'b0000001x: Y=3'b001;
+            8'b00000001: Y=3'b000;
+            default: Y=3'b000;
+        endcase
+        end
+        else begin
+            Y=3'b000;
+        end
+            end
+    `probe(EI);
+    `probe(I[7]);
+    `probe(I[6]);
+    `probe(I[5]);
+    `probe(I[4]);
+    `probe(I[3]);
+    `probe(I[2]);
+    `probe(I[1]);
+    `probe(I[0]);
+    `probe(Y[2]);
+    `probe(Y[1]);
+    `probe(Y[0]);
+    `probe(GS);
+    `probe(EO);
+endmodule

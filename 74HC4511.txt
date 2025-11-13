@@ -1,0 +1,84 @@
+module top_module();
+    reg clk=0;
+    always #5 clk=~clk;
+    `probe(clk);
+    reg [6:0]in=7'b0000000;
+    initial begin
+        `probe_start;
+        #10 in<=7'b0110000;
+        #10 in<=7'b0110001;
+        #10 in<=7'b0110010;
+        #10 in<=7'b0110011;
+        #10 in<=7'b0110100;
+        #10 in<=7'b0110101;
+        #10 in<=7'b0110110;
+        #10 in<=7'b0110111;
+        #10 in<=7'b0111000;
+        #10 in<=7'b0111001;
+        #10 in<=7'b0111010;
+        #10 in<=7'b0111011;
+        #10 in<=7'b0111100;
+        #10 in<=7'b0111101;
+        #10 in<=7'b0111110;
+        #10 in<=7'b1101010;
+        #10 in<=7'b1011010;
+        #10 in<=7'b0110101;
+        #10 in<=7'b1111010;
+        #10 in<=7'b0110000;
+        #10 in<=7'b0110001;
+        #10 in<=7'b0110010;
+        #10 in<=7'b0110011;
+        #20 $finish;
+    end
+    wire [6:0]Y;
+    chip_74HC4511 my_module(in[6],in[5],in[4],in[3:0],Y);
+endmodule    
+    
+module chip_74HC4511(
+    input LE,
+    input BL,
+    input LT,
+    input [3:0]D,
+    output reg[6:0]Y
+);
+    reg [3:0]D_latch;
+    always @(*) begin
+        if (~{LE,BL,LT}) begin
+            D_latch=D;
+        end
+        casex({LE,BL,LT,D_latch})
+            7'b0110000: Y=7'b1111110;
+            7'b0110001: Y=7'b0110000;
+            7'b0110010: Y=7'b1101101;
+            7'b0110011: Y=7'b1111001;
+            7'b0110100: Y=7'b0110011;
+            7'b0110101: Y=7'b1011011;
+            7'b0110110: Y=7'b0011111;
+            7'b0110111: Y=7'b1110000;
+            7'b0111000: Y=7'b1111111;
+            7'b0111001: Y=7'b1111011;
+            7'b0111010: Y=7'b0000000;
+            7'b0111011: Y=7'b0000000;
+            7'b0111100: Y=7'b0000000;
+            7'b0111101: Y=7'b0000000;
+            7'b0111110: Y=7'b0000000;
+            7'b0111111: Y=7'b0000000;
+            7'bxx0xxxx: Y=7'b1111111;
+            7'bx01xxxx: Y=7'b0000000;
+        endcase
+    end
+        `probe(LE);
+        `probe(BL);
+        `probe(LT);
+        `probe(D[3]);
+        `probe(D[2]);
+        `probe(D[1]);
+        `probe(D[0]);
+        `probe(Y[6]);
+        `probe(Y[5]);
+        `probe(Y[4]);
+        `probe(Y[3]);
+        `probe(Y[2]);
+        `probe(Y[1]);
+        `probe(Y[0]);
+endmodule

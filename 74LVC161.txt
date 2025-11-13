@@ -1,0 +1,92 @@
+module top_module();
+    reg clk=0;
+    always #5 clk=~clk;
+    reg [7:0]in;
+    wire [3:0]Q;
+    wire TC;
+    `probe(clk);
+    initial begin
+       `probe_start;
+        // 初始化输入
+        in = 8'b00000000;  // CR=0（清零），其他信号初始为0
+        #10;
+        
+        // 1. 释放清零（CR=1），并行载入数据（PE=0）
+        in = 8'b10001010;  // CR=1, PE=0, CEP=0, CET=0, D=1010
+        #10;
+        
+        // 2. 保持PE=0，继续载入新数据（覆盖原有值）
+        in = 8'b10000110;  // D=0110
+        #10;
+        
+        // 3. 进入计数模式（PE=1, CEP=1, CET=1），开始递增计数
+        in = 8'b11110110;  // PE=1, CEP=1, CET=1（计数使能）
+        #10;  
+        #10;  
+        #10;  
+        #10;  
+        #10;  
+        #10;  
+        #10;  
+        #10;  
+        #10;  
+        #10;  
+        #10;
+        
+        // 4. 暂停计数（CEP=0或CET=0），保持当前值
+        in = 8'b11010000;  // CEP=0（计数暂停）
+        #10;  // Q保持0000
+        #10;
+        
+        // 5. 再次并行载入数据（PE=0）
+        in = 8'b10001111;  // PE=0, D=1111
+        #10;
+        // 6. 清零
+        in = 8'b00001111;  // PE=0, D=1111
+        #10;
+        // 7. 结束测试
+        #20 $finish;
+    end
+    chip_74LVC261 my_module (in[7],in[6],in[5],in[4],clk,in[3:0],Q,TC);
+endmodule
+
+module chip_74LVC261(
+	input CR,
+    input PE,
+    input CEP,
+    input CET,
+    input CP,
+    input [3:0]D,
+    output reg[3:0]Q,
+    output reg TC
+);
+    always @(posedge CP or negedge CR) begin
+        if(~CR) begin
+            Q<=4'b0000;
+            TC<=0;
+        end
+        else begin
+            casex ({PE,CEP,CET})
+                3'b0xx: Q<=D;
+                3'b111:
+                    begin
+                        if(Q==4'b1111) TC=~TC;
+                    	Q<=Q+1;
+                	end
+            endcase
+        end
+    end
+    `probe(CR);
+    `probe(PE);
+    `probe(CEP);
+    `probe(CET);
+    `probe(D[3]);
+    `probe(D[2]);
+    `probe(D[1]);
+    `probe(D[0]);
+    `probe(Q[3]);
+    `probe(Q[2]);
+    `probe(Q[1]);
+    `probe(Q[0]);
+    `probe(TC);
+endmodule

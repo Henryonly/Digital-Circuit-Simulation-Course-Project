@@ -1,0 +1,117 @@
+module top_module();
+    reg clk = 0;
+    `probe(clk);
+    always #5 clk = ~clk; 
+    reg [3:0] A=4'd0, B=4'd0;
+    reg IA_GT_B=0, IA_EQ_B=0, IA_LT_B=0;
+    
+    initial begin
+        `probe_start;
+        #10 A=4'd0; B=4'd0; IA_GT_B=0; IA_EQ_B=1; IA_LT_B=0;
+        #10 A=4'd3; B=4'd5; IA_GT_B=0; IA_EQ_B=1; IA_LT_B=0;
+        #10 A=4'd7; B=4'd2; IA_GT_B=0; IA_EQ_B=1; IA_LT_B=0;
+        #10 A=4'd5; B=4'd5; IA_GT_B=0; IA_EQ_B=1; IA_LT_B=0;
+        #10 A=4'd9; B=4'd9; IA_GT_B=1; IA_EQ_B=0; IA_LT_B=0; 
+        #10 A=4'd6; B=4'd6; IA_GT_B=1; IA_EQ_B=0; IA_LT_B=1; 
+        #10 A=4'd5; B=4'd5; IA_GT_B=0; IA_EQ_B=0; IA_LT_B=0; 
+        #10 A=4'd2; B=4'd2; IA_GT_B=0; IA_EQ_B=0; IA_LT_B=1;
+        #10 A=4'd15; B=4'd0; IA_GT_B=0; IA_EQ_B=1; IA_LT_B=0;
+        #10 A=4'd0; B=4'd15; IA_GT_B=0; IA_EQ_B=1; IA_LT_B=0;
+        #20 $finish;
+    end
+    
+    wire Y_GT, Y_EQ, Y_LT;
+    chip_74HC85 my_module(
+        .A(A),
+        .B(B),
+        .IA_GT_B(IA_GT_B),
+        .IA_EQ_B(IA_EQ_B),
+        .IA_LT_B(IA_LT_B),
+        .OA_GT_B(Y_GT),
+        .OA_EQ_B(Y_EQ),
+        .OA_LT_B(Y_LT)
+    );
+    
+endmodule
+
+module chip_74HC85(
+    input [3:0] A,  
+    input [3:0] B,   
+    input IA_GT_B,      
+    input IA_EQ_B,      
+    input IA_LT_B,      
+    output reg OA_GT_B, 
+    output reg OA_EQ_B, 
+    output reg OA_LT_B  
+);
+
+always @(*) begin
+    if (A[3] > B[3]) begin
+        OA_GT_B = 1'b1;
+        OA_EQ_B = 1'b0;
+        OA_LT_B = 1'b0;
+    end
+    else if (A[3] < B[3]) begin
+        OA_GT_B = 1'b0;
+        OA_EQ_B = 1'b0;
+        OA_LT_B = 1'b1;
+    end
+    else if (A[2] > B[2]) begin
+        OA_GT_B = 1'b1;
+        OA_EQ_B = 1'b0;
+        OA_LT_B = 1'b0;
+    end
+    else if (A[2] < B[2]) begin
+        OA_GT_B = 1'b0;
+        OA_EQ_B = 1'b0;
+        OA_LT_B = 1'b1;
+    end
+    else if (A[1] > B[1]) begin
+        OA_GT_B = 1'b1;
+        OA_EQ_B = 1'b0;
+        OA_LT_B = 1'b0;
+    end
+    else if (A[1] < B[1]) begin
+        OA_GT_B = 1'b0;
+        OA_EQ_B = 1'b0;
+        OA_LT_B = 1'b1;
+    end
+    else if (A[0] > B[0]) begin
+        OA_GT_B = 1'b1;
+        OA_EQ_B = 1'b0;
+        OA_LT_B = 1'b0;
+    end
+    else if (A[0] < B[0]) begin
+        OA_GT_B = 1'b0;
+        OA_EQ_B = 1'b0;
+        OA_LT_B = 1'b1;
+    end
+    else begin
+        if ((IA_GT_B==0)&(IA_LT_B==0)&(IA_EQ_B==0)) begin
+            OA_GT_B=1;
+            OA_EQ_B=0;
+            OA_LT_B=1;
+        end
+        else if ((IA_GT_B==1)&(IA_LT_B==1)&(IA_EQ_B==0)) begin
+            OA_GT_B=0;
+            OA_EQ_B=0;
+            OA_LT_B=0;
+        end
+        else begin   
+        OA_GT_B = IA_GT_B;
+        OA_EQ_B = IA_EQ_B;
+        OA_LT_B = IA_LT_B;
+        end
+    end
+end
+
+`probe(A);
+`probe(B);
+`probe(IA_GT_B);
+`probe(IA_EQ_B);
+`probe(IA_LT_B);
+`probe(OA_GT_B);
+`probe(OA_EQ_B);
+`probe(OA_LT_B);
+
+endmodule

@@ -1,0 +1,59 @@
+module top_module();
+    reg clk=0;
+    `probe(clk);
+    always #5 clk=~clk;
+    reg [5:0]in=6'b000000;
+    initial begin 
+        `probe_start;
+    	#10 in<=6'b110101;
+        #10 in<=6'b101101;
+        #10 in<=6'b000101;
+        #10 in<=6'b100000;
+        #10 in<=6'b100001;
+        #10 in<=6'b100010;
+        #10 in<=6'b100011;
+        #10 in<=6'b100100;
+        #10 in<=6'b100101;
+        #10 in<=6'b100110;
+        #10 in<=6'b100111;
+        #30 $finish;
+    end
+    wire [7:0]Y;
+    chip_74LS138 my_module(in[5:3],in[2:0],Y);
+endmodule
+    
+module chip_74LS138(
+    input [2:0]E,
+    input [2:0]A,
+    output reg[7:0]Y
+);
+    always @(*) begin
+        casex ({E,A})
+            6'bx1xxxx: Y=8'b11111111;
+            6'bxx1xxx: Y=8'b11111111;
+            6'b0xxxxx: Y=8'b11111111;
+            6'b100111: Y=8'b01111111;
+            6'b100110: Y=8'b10111111;
+            6'b100101: Y=8'b11011111;
+            6'b100100: Y=8'b11101111;
+            6'b100011: Y=8'b11110111;
+            6'b100010: Y=8'b11111011;
+            6'b100001: Y=8'b11111101;
+            6'b100000: Y=8'b11111110;
+        endcase
+    end
+    `probe(E[2]);
+    `probe(E[1]);
+    `probe(E[0]);
+    `probe(A[2]);
+    `probe(A[1]);
+    `probe(A[0]);
+    `probe(Y[7]);
+    `probe(Y[6]);
+    `probe(Y[5]);
+    `probe(Y[4]);
+    `probe(Y[3]);
+    `probe(Y[2]);
+    `probe(Y[1]);
+    `probe(Y[0]);
+endmodule

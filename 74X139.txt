@@ -1,0 +1,40 @@
+module top_module();
+    reg clk=0;
+    `probe(clk);
+    always #5 clk=~clk;
+    reg [2:0]in=3'b000;
+    initial begin 
+        `probe_start;
+    	#10 in<=3'b101;
+        #10 in<=3'b000;
+        #10 in<=3'b001;
+        #10 in<=3'b010;
+        #10 in<=3'b011;
+        #30 $finish;
+    end
+    wire [3:0]Y;
+    chip_74LS138 my_module(in[2],in[1:0],Y);
+endmodule
+    
+module chip_74LS139(
+    input E,
+    input [1:0]A,
+    output reg[3:0]Y
+);
+    always @(*) begin
+        casex ({E,A})
+            3'b1xx: Y=4'b1111;
+            3'b000: Y=4'b1110;
+            3'b001: Y=4'b1101;
+            3'b010: Y=4'b1011;
+            3'b011: Y=4'b0111;
+        endcase
+    end
+    `probe(E);
+    `probe(A[1]);
+    `probe(A[0]);
+    `probe(Y[3]);
+    `probe(Y[2]);
+    `probe(Y[1]);
+    `probe(Y[0]);
+endmodule

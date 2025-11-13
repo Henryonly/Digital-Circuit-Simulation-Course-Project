@@ -1,0 +1,59 @@
+module top_module();
+    reg clk=0;
+    `probe(clk);
+    always #20 clk=~clk;
+    reg [3:0]in=4'b0000;
+    initial begin
+        `probe_start;
+        #10 in<=4'b1001;
+        #10 in<=4'b0000;
+        #10 in<=4'b0001;
+        #10 in<=4'b0010;
+        #10 in<=4'b0011;
+        #10 in<=4'b0100;
+        #10 in<=4'b0101;
+        #10 in<=4'b0110;
+        #10 in<=4'b0111;
+        #20 $finish;
+    end
+    wire [7:0]D=8'b10101100;
+    wire Y,notY;
+    chip_74HC151 my_module(in[3],in[2:0],D,Y,notY);
+endmodule
+
+module chip_74HC151(
+	input E,
+    input [2:0]S,
+    input [7:0]D,
+    output reg Y,
+    output notY
+);
+    always @(*) begin
+        casex ({E,S})
+            4'b1xxx: Y=0;
+            4'b0000: Y=D[0];
+            4'b0001: Y=D[1];
+            4'b0010: Y=D[2];
+            4'b0011: Y=D[3];
+            4'b0100: Y=D[4];
+            4'b0101: Y=D[5];
+            4'b0110: Y=D[6];
+            4'b0111: Y=D[7];
+        endcase
+    end
+    assign notY=~Y; 
+    `probe(E);
+    `probe(S[2]);
+    `probe(S[1]);
+    `probe(S[0]);
+    `probe(D[7]);
+    `probe(D[6]);
+    `probe(D[5]);
+    `probe(D[4]);
+    `probe(D[3]);
+    `probe(D[2]);
+    `probe(D[1]);
+    `probe(D[0]);
+    `probe(Y);
+    `probe(notY);
+endmodule
